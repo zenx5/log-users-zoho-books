@@ -92,18 +92,35 @@ class LogUsersBooks {
                 $date_log = isset($_POST['date_log']) ? $_POST['date_log'] : date("Y-m-d");
                 $contact_id = $_POST["contact_id"];
                 if ( $_POST['id'] == -1 ) {
-                    $response_create_user = BooksActions::create_customer([
+                    $id = wp_insert_user([
+                        "user_pass" => "Customer12345",
+                        "user_login" => $first_name."_customer_".date("Y"),
+                        "user_email" => "$first_name@eugenio.com",
+                        "display_name" => "$first_name $last_name",
                         "first_name" => $first_name,
                         "last_name" => $last_name,
-                        "dni" => $dni,
-                        "phone" => $phone,
-                        "services" => $services
+                        "role" => "customer"
                     ]);
-                    if( $response_create_user["success"]==false ) {
-                        LogControl::insert(__FILE__, __LINE__, "El usuario no pudo ser creado, ponte en contacto con el administrador", "loguser,error");
-                        throw new Exception("El usuario no pudo ser creado, ponte en contacto con el administrador");
+                    if( is_integer( $id ) ) {
+                        $response_create_user = BooksActions::create_customer([
+                            "customer_id" => $id,
+                            "first_name" => $first_name,
+                            "last_name" => $last_name,
+                            "dni" => $dni,
+                            "phone" => $phone,
+                            "services" => $services
+                        ]);
+                        if( $response_create_user["success"]==false ) {
+                            $message = "<i>El usuario no pudo ser creado en <b style='color:red;'>ZOHO</b>, ponte en contacto con el administrador</i>";
+                            LogControl::insert(__FILE__, __LINE__, $message, "loguser,error");
+                            throw new Exception($message);
+                        }
+                        $contact_id = $response_create_user["data"]["contact_id"];
+                    } else {
+                        $message = "<i>El usuario no pudo ser creado en <b style='color:red;'>WORDPRESS</b>, ponte en contacto con el administrador</i>";
+                        LogControl::insert(__FILE__, __LINE__, $message, "loguser,error");
+                        throw new Exception($message);
                     }
-                    $contact_id = $response_create_user["data"]["contact_id"];
                 }
                 $input_invoice = [
                     "customer_id" => $contact_id,
