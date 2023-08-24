@@ -41,6 +41,7 @@ createApp({
                 this.firstName = firstName
                 this.lastName = lastName.join(" ")
                 this.dni = customer.data.dni
+                this.phone = customer.billing.billing_phone
             } else {
                 this.firstName = ""
                 this.lastName = ""
